@@ -706,7 +706,31 @@
             }
         }
 
-        // --- DATABASE OPERATIONS ---
+        <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+
+<script>
+    // 1. Configuração do teu Firebase (Substitui com os teus dados reais!)
+    const firebaseConfig = {
+        apiKey: "A_TUA_API_KEY",
+        authDomain: "O_TEU_AUTH_DOMAIN",
+        projectId: "O_TEU_PROJECT_ID",
+        storageBucket: "O_TEU_STORAGE_BUCKET",
+        messagingSenderId: "O_TEU_SENDER_ID",
+        appId: "O_TEU_APP_ID"
+    };
+
+    // 2. Inicializar o Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    // A partir daqui manténs as tuas variáveis globais
+    let subjects = [];
+    let activeSubjectId = null;
+    
+    // ... restante código ...// --- DATABASE OPERATIONS ---
         function openDB() {
             return new Promise((resolve, reject) => {
                 try {
