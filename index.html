@@ -296,4 +296,893 @@
 
         .layout-grid {
             display: grid;
-            grid-template-columns: 1.2fr
+            grid-template-columns: 1.2fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background-color: var(--white);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(212, 122, 144, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--pink-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px dashed var(--pink-light);
+            padding-bottom: 12px;
+            margin-bottom: 4px;
+        }
+
+        /* Notes Card */
+        .notes-textarea {
+            width: 100%;
+            height: 380px;
+            resize: none;
+            background-color: var(--pink-soft);
+            border: 2px solid var(--pink-light);
+            padding: 16px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-color);
+            border-radius: 12px;
+        }
+
+        .notes-textarea:focus {
+            border-color: var(--pink-primary);
+            background-color: var(--white);
+        }
+
+        /* Checklist Card */
+        .checklist-form {
+            display: flex;
+            gap: 8px;
+        }
+
+        .checklist-list {
+            list-style: none;
+            overflow-y: auto;
+            max-height: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-right: 4px;
+        }
+
+        .checklist-item {
+            background-color: var(--pink-soft);
+            border-radius: 8px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            transition: var(--transition);
+        }
+
+        .checklist-item:hover {
+            transform: translateY(-1px);
+            background-color: var(--pink-light);
+        }
+
+        .checklist-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            word-break: break-all;
+        }
+
+        .checklist-checkbox {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--pink-primary);
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            background-color: var(--white);
+            flex-shrink: 0;
+        }
+
+        .checklist-checkbox::after {
+            content: '✓';
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--white);
+            display: none;
+        }
+
+        .checklist-checkbox:checked {
+            background-color: var(--pink-primary);
+            border-color: var(--pink-primary);
+        }
+
+        .checklist-checkbox:checked::after {
+            display: block;
+        }
+
+        .checklist-text {
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .checklist-checkbox:checked + .checklist-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .btn-delete-task, .btn-delete-pdf {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 4px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-delete-task:hover, .btn-delete-pdf:hover {
+            color: #d9534f;
+            background-color: rgba(217, 83, 79, 0.08);
+        }
+
+        /* PDF Card */
+        .pdf-upload-btn-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--pink-accent);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            background-color: var(--pink-soft);
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .pdf-upload-btn-label:hover {
+            background-color: var(--pink-light);
+            border-color: var(--pink-primary);
+        }
+
+        .pdf-upload-btn-label span {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--pink-dark);
+            margin-top: 8px;
+        }
+
+        .pdf-upload-btn-label p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        #pdf-input {
+            display: none;
+        }
+
+        .pdf-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .pdf-item {
+            background-color: var(--pink-soft);
+            border-radius: 8px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition);
+        }
+
+        .pdf-item:hover {
+            background-color: var(--pink-light);
+            transform: translateY(-1px);
+        }
+
+        .pdf-link {
+            text-decoration: none;
+            color: var(--pink-dark);
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            word-break: break-all;
+            padding-right: 12px;
+        }
+
+        .pdf-link:hover {
+            color: var(--pink-primary);
+            text-decoration: underline;
+        }
+
+        /* Toast Alert System */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background-color: var(--pink-dark);
+            color: var(--white);
+            padding: 12px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Hide elements on loading */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Custom Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--pink-accent);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--pink-primary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+                height: auto;
+                overflow: auto;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 2px solid var(--pink-light);
+            }
+
+            .main-content {
+                height: auto;
+                overflow: visible;
+                padding: 16px;
+            }
+
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo-area">
+            <h1>Planner de Estudos 🌸</h1>
+            <p> seu reizinho te ama!🤍 </p>
+        </div>
+
+        <div class="add-subject-form">
+            <label for="subject-input">Nova Disciplina / Matéria</label>
+            <div class="input-group">
+                <input type="text" id="subject-input" placeholder="Ex: TGA, Finanças..." maxlength="30">
+                <button class="btn btn-icon-only" id="btn-add-subject" title="Adicionar Matéria">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="subjects-list-title">Minhas Matérias</div>
+        <div class="subjects-list-container" id="subjects-container">
+            </div>
+    </div>
+
+    <div class="main-content">
+        <div class="welcome-screen" id="welcome-screen">
+            <h2>Olá, futura Administradora! 💕</h2>
+            <p>Organizar os estudos é o primeiro passo para o sucesso da sua carreira executiva ou empreendedora. Crie uma nova matéria ao lado ou selecione uma existente para adicionar anotações, gerenciar tarefas e anexar seus PDFs de aula!</p>
+            
+            <div class="quote-card">
+                <p>"Planejar é projetar o futuro, e organizar é torná-lo possível."</p>
+                <span> te amo minha jacaré ✨</span>
+            </div>
+        </div>
+
+        <div class="dashboard hidden" id="subject-dashboard">
+            <div class="subject-header">
+                <h2 id="active-subject-title">Nome da Matéria</h2>
+                <div style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;" id="active-subject-progress">0% Concluído</div>
+            </div>
+
+            <div class="layout-grid">
+                <div class="card">
+                    <div class="card-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        Anotações Gerais
+                    </div>
+                    <textarea class="notes-textarea" id="notes-area" placeholder="Digite seus resumos, anotações de aula, pontos importantes do capítulo ou links úteis aqui... (as alterações são salvas ao clicar no botão salvar!)"></textarea>
+                    <button class="btn" id="btn-save-notes">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        Salvar Anotações ✨
+                    </button>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="card">
+                        <div class="card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                            O que estudar nesta matéria?
+                        </div>
+                        <div class="checklist-form">
+                            <input type="text" id="task-input" placeholder="Ex: Ler o capítulo 2 de Kotler..." maxlength="100">
+                            <button class="btn btn-icon-only" id="btn-add-task" title="Adicionar Tarefa">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                        </div>
+                        <ul class="checklist-list" id="tasks-container">
+                            </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            Material / PDFs de Aula
+                        </div>
+                        
+                        <label class="pdf-upload-btn-label">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--pink-primary);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            <span>Anexar PDF da Aula</span>
+                            <p>Tamanho máx. recomendado: 15MB</p>
+                            <input type="file" id="pdf-input" accept="application/pdf">
+                        </label>
+
+                        <div class="pdf-list" id="pdf-container">
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Anotações salvas com sucesso! 💕</div>
+
+    <script>
+        // --- STORAGE EMERGENCE/FALLBACK SYSTEM ---
+        let useLocalStorage = false;
+
+        const DB_NAME = 'AdmStudyDB';
+        const STORE_NAME = 'subjects';
+
+        let subjects = [];
+        let activeSubjectId = null;
+
+        // Verify if IndexedDB is available
+        function isIndexedDBSupported() {
+            try {
+                return 'indexedDB' in window && window.indexedDB !== null;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // --- DATABASE OPERATIONS ---
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                try {
+                    if (!isIndexedDBSupported()) {
+                        reject(new Error("IndexedDB não suportado"));
+                        return;
+                    }
+                    const request = indexedDB.open(DB_NAME, 2);
+                    
+                    request.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains(STORE_NAME)) {
+                            db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                        }
+                    };
+                    
+                    request.onsuccess = (e) => resolve(e.target.result);
+                    request.onerror = (e) => reject(e.target.error);
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        }
+
+        async function loadSubjectsFromDB() {
+            if (useLocalStorage) {
+                try {
+                    const stored = localStorage.getItem(STORE_NAME);
+                    return stored ? JSON.parse(stored) : [];
+                } catch (e) {
+                    console.error("Erro no localStorage:", e);
+                    return [];
+                }
+            }
+
+            try {
+                const db = await openDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(STORE_NAME, 'readonly');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.getAll();
+                    
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => reject(request.error);
+                });
+            } catch (error) {
+                console.warn("IndexedDB indisponível/bloqueado. Ativando localStorage...", error);
+                useLocalStorage = true;
+                return loadSubjectsFromDB(); // Retry using localStorage
+            }
+        }
+
+        async function saveSubjectToDB(subject) {
+            // Safety checks to prevent code breaks on older sessions
+            if (!subject.tasks) subject.tasks = [];
+            if (!subject.pdfs) subject.pdfs = [];
+
+            if (useLocalStorage) {
+                try {
+                    const index = subjects.findIndex(s => s.id === subject.id);
+                    if (index !== -1) {
+                        subjects[index] = subject;
+                    } else {
+                        subjects.push(subject);
+                    }
+                    localStorage.setItem(STORE_NAME, JSON.stringify(subjects));
+                } catch (e) {
+                    console.error("Erro localStorage:", e);
+                }
+                return;
+            }
+
+            try {
+                const db = await openDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(STORE_NAME, 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.put(subject);
+                    
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            } catch (error) {
+                console.error("Erro IndexedDB. Salvando via localStorage...", error);
+                useLocalStorage = true;
+                await saveSubjectToDB(subject);
+            }
+        }
+
+        async function deleteSubjectFromDB(id) {
+            if (useLocalStorage) {
+                try {
+                    subjects = subjects.filter(s => s.id !== id);
+                    localStorage.setItem(STORE_NAME, JSON.stringify(subjects));
+                } catch (e) {
+                    console.error("Erro de deleção localStorage:", e);
+                }
+                return;
+            }
+
+            try {
+                const db = await openDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(STORE_NAME, 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.delete(id);
+                    
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            } catch (error) {
+                console.error("Erro ao deletar do banco de dados:", error);
+            }
+        }
+
+        // --- SYSTEM EVENTS & LOGIC ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                subjects = await loadSubjectsFromDB();
+                renderSubjectsList();
+
+                // Dom elements
+                const btnAddSubject = document.getElementById('btn-add-subject');
+                const subjectInput = document.getElementById('subject-input');
+                const btnSaveNotes = document.getElementById('btn-save-notes');
+                const btnAddTask = document.getElementById('btn-add-task');
+                const taskInput = document.getElementById('task-input');
+                const pdfInput = document.getElementById('pdf-input');
+
+                // Event Listeners with safety checks
+                if (btnAddSubject) btnAddSubject.addEventListener('click', addSubject);
+                if (subjectInput) {
+                    subjectInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addSubject(); });
+                }
+                if (btnSaveNotes) btnSaveNotes.addEventListener('click', saveNotes);
+                if (btnAddTask) btnAddTask.addEventListener('click', addTask);
+                if (taskInput) {
+                    taskInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTask(); });
+                }
+                if (pdfInput) pdfInput.addEventListener('change', uploadPDF);
+            } catch (err) {
+                console.error("Erro na inicialização:", err);
+            }
+        });
+
+        // Toast System
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Add Subject
+        async function addSubject() {
+            const subjectInput = document.getElementById('subject-input');
+            if (!subjectInput) return;
+            
+            const name = subjectInput.value.trim();
+            if (!name) return;
+
+            const newSubject = {
+                id: Date.now().toString(),
+                name: name,
+                notes: '',
+                tasks: [],
+                pdfs: []
+            };
+
+            if (useLocalStorage) {
+                subjects.push(newSubject);
+            }
+            await saveSubjectToDB(newSubject);
+            subjectInput.value = '';
+            
+            renderSubjectsList();
+            selectSubject(newSubject.id);
+            showToast('Matéria adicionada com sucesso! 🌸');
+        }
+
+        // Delete Subject
+        async function deleteSubject(e, id) {
+            e.stopPropagation(); 
+            if (!confirm('Deseja mesmo remover essa disciplina de estudos? Todas as anotações, tarefas e PDFs serão perdidos para sempre.')) return;
+
+            if (useLocalStorage) {
+                subjects = subjects.filter(s => s.id !== id);
+            }
+            await deleteSubjectFromDB(id);
+
+            if (activeSubjectId === id) {
+                activeSubjectId = null;
+                document.getElementById('subject-dashboard').classList.add('hidden');
+                document.getElementById('welcome-screen').classList.remove('hidden');
+            }
+
+            renderSubjectsList();
+            showToast('Matéria excluída.');
+        }
+
+        // Render Sidebar
+        function renderSubjectsList() {
+            const container = document.getElementById('subjects-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (!subjects || subjects.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 20px 0;">Nenhuma matéria adicionada ainda.</div>';
+                return;
+            }
+
+            subjects.forEach(subject => {
+                const item = document.createElement('div');
+                item.className = `subject-item ${subject.id === activeSubjectId ? 'active' : ''}`;
+                item.onclick = () => selectSubject(subject.id);
+
+                const tasks = subject.tasks || [];
+                const pdfs = subject.pdfs || [];
+
+                // Calculating progress safely
+                const totalTasks = tasks.length;
+                const completedTasks = tasks.filter(t => t.completed).length;
+                const filesCount = pdfs.length;
+
+                item.innerHTML = `
+                    <div class="subject-item-name">${escapeHTML(subject.name)}</div>
+                    <div class="subject-item-meta">
+                        <span>📝 ${completedTasks}/${totalTasks} tarefas</span>
+                        <span>📎 ${filesCount} PDFs</span>
+                    </div>
+                    <button class="btn-delete-subject" onclick="deleteSubject(event, '${subject.id}')" title="Excluir Matéria">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Select Active Subject
+        function selectSubject(id) {
+            activeSubjectId = id;
+            renderSubjectsList();
+
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const subjectDashboard = document.getElementById('subject-dashboard');
+
+            if (welcomeScreen && subjectDashboard) {
+                welcomeScreen.classList.add('hidden');
+                subjectDashboard.classList.remove('hidden');
+            }
+
+            renderActiveSubject();
+        }
+
+        // Render Active Subject Screen
+        function renderActiveSubject() {
+            const subject = subjects.find(s => s.id === activeSubjectId);
+            if (!subject) return;
+
+            const activeTitle = document.getElementById('active-subject-title');
+            const notesArea = document.getElementById('notes-area');
+            if (activeTitle) activeTitle.textContent = subject.name;
+            if (notesArea) notesArea.value = subject.notes || '';
+
+            const tasks = subject.tasks || [];
+            const pdfs = subject.pdfs || [];
+
+            // Render tasks
+            const tasksContainer = document.getElementById('tasks-container');
+            if (tasksContainer) {
+                tasksContainer.innerHTML = '';
+                
+                let completedTasksCount = 0;
+                if (tasks.length > 0) {
+                    tasks.forEach((task, index) => {
+                        if (task.completed) completedTasksCount++;
+                        
+                        const item = document.createElement('li');
+                        item.className = 'checklist-item';
+                        item.innerHTML = `
+                            <div class="checklist-left">
+                                <input type="checkbox" class="checklist-checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${index}')">
+                                <span class="checklist-text">${escapeHTML(task.text)}</span>
+                            </div>
+                            <button class="btn-delete-task" onclick="deleteTask('${index}')" title="Excluir Tarefa">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        `;
+                        tasksContainer.appendChild(item);
+                    });
+                } else {
+                    tasksContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">Nenhuma tarefa de estudo adicionada.</div>';
+                }
+
+                // Update Progress Percentage
+                const totalTasks = tasks.length;
+                const progressPercentage = totalTasks > 0 ? Math.round((completedTasksCount / totalTasks) * 100) : 0;
+                const progressElement = document.getElementById('active-subject-progress');
+                if (progressElement) progressElement.textContent = `${progressPercentage}% Concluído`;
+            }
+
+            // Render PDFs
+            const pdfContainer = document.getElementById('pdf-container');
+            if (pdfContainer) {
+                pdfContainer.innerHTML = '';
+
+                if (pdfs.length > 0) {
+                    pdfs.forEach((pdf, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'pdf-item';
+                        item.innerHTML = `
+                            <a class="pdf-link" onclick="openPDF('${index}')" title="Clique para abrir">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #d9534f; flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                                ${escapeHTML(pdf.name)}
+                            </a>
+                            <button class="btn-delete-pdf" onclick="deletePDF('${index}')" title="Remover PDF">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        `;
+                        pdfContainer.appendChild(item);
+                    });
+                } else {
+                    pdfContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">Nenhum material de aula em PDF anexado ainda.</div>';
+                }
+            }
+        }
+
+        // Save Notes
+        async function saveNotes() {
+            const subject = subjects.find(s => s.id === activeSubjectId);
+            if (!subject) return;
+
+            const notesArea = document.getElementById('notes-area');
+            if (notesArea) {
+                subject.notes = notesArea.value;
+                await saveSubjectToDB(subject);
+                showToast('Suas anotações foram salvas! 📝🌸');
+            }
+        }
+
+        // Add Checklist Task
+        async function addTask() {
+            const taskInput = document.getElementById('task-input');
+            if (!taskInput) return;
+            
+            const text = taskInput.value.trim();
+            if (!text) return;
+
+            const subject = subjects.find(s => s.id === activeSubjectId);
+            if (!subject) return;
+
+            if (!subject.tasks) subject.tasks = [];
+            subject.tasks.push({
+                text: text,
+                completed: false
+            });
+
+            await saveSubjectToDB(subject);
+            taskInput.value = '';
+            
+            renderActiveSubject();
+            renderSubjectsList(); 
+            showToast('Nova tarefa adicionada! ✨');
+        }
+
+        // Toggle Task Complete State
+        async function toggleTask(index) {
+            const subject = subjects.find(s => s.id === activeSubjectId);
+            if (!subject) return;
+
+            subject.tasks[index].completed = !subject.tasks[index].completed;
+            await saveSubjectToDB(subject);
+
+            renderActiveSubject();
+            renderSubjectsList(); 
+        }
+
+        // Delete Checklist Task
+        async function deleteTask(index) {
+            const subject = subjects.find(s => s.id === activeSubjectId);
+            if (!subject) return;
+
+            subject.tasks.splice(index, 1);
+            await saveSubjectToDB(subject);
+
+            renderActiveSubject();
+            renderSubjectsList(); 
+        }
+
+        // Upload and Store PDF
+        async function uploadPDF(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.type !== "application/pdf") {
+                alert("Por favor, selecione apenas arquivos do tipo PDF.");
+                return;
+            }
+
+            if (file.size > 25 * 1024 * 1024) {
+                alert("O arquivo é muito grande! PDF com limite máximo de 25MB.");
+                return;
+            }
+
+            if (useLocalStorage) {
+                alert("Atenção: Estamos no Modo de Compatibilidade (localStorage) porque o teu navegador bloqueou o banco de dados principal. Neste modo, o upload de PDFs grandes pode falhar por falta de espaço. Se puderes, abre esta página fora do Modo Privado/Incógnito para usar o armazenamento completo!");
+            }
+
+            const subject = subjects.find(s => s.id === activeSubjectId);
+            if (!subject) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                const arrayBuffer = event.target.result;
+                
+                if (!subject.pdfs) subject.pdfs = [];
+                subject.pdfs.push({
+                    name: file.name,
+                    type: file.type,
+                    data: arrayBuffer 
+                });
+
+                await saveSubjectToDB(subject);
+                e.target.value = ''; 
+                
+                renderActiveSubject();
+                renderSubjectsList();
+                showToast('Material PDF anexado com sucesso! 📎💖');
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        // View/Open PDF offline
+        window.openPDF = function(pdfIndex) {
+            const subject = subjects.find(s => s.id === activeSubjectId);
+            if (!subject) return;
+
+            const pdf = subject.pdfs[pdfIndex];
+            if (!pdf) return;
+
+            const blob = new Blob([pdf.data], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+        };
+
+        // Delete PDF
+        async function deletePDF(pdfIndex) {
+            if (!confirm("Deseja realmente excluir este material PDF?")) return;
+
+            const subject = subjects.find(s => s.id === activeSubjectId);
+            if (!subject) return;
+
+            subject.pdfs.splice(pdfIndex, 1);
+            await saveSubjectToDB(subject);
+
+            renderActiveSubject();
+            renderSubjectsList();
+            showToast('PDF removido.');
+        }
+
+        // Prevent HTML injection helper
+        function escapeHTML(str) {
+            return str.replace(/[&<>'\"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+    </script>
+</body>
+</html>
