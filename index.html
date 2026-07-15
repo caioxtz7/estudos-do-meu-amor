@@ -687,199 +687,95 @@
 
     <div class="toast" id="toast">Anotações salvas com sucesso! 💕</div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+
     <script>
-        // --- STORAGE EMERGENCE/FALLBACK SYSTEM ---
-        let useLocalStorage = false;
+        // --- 1. CONFIGURAÇÃO DO FIREBASE ---
+        // Configuração com o link do teu Realtime Database já inserido!
+        // IMPORTANTE: Insere a tua apiKey, projectId, storageBucket, etc. gerados no painel do teu Firebase.
+        const firebaseConfig = {
+            apiKey: "SUBSTITUA_PELA_SUA_API_KEY",
+            authDomain: "planner-adm.firebaseapp.com",
+            databaseURL: "https://planner-adm-default-rtdb.firebaseio.com/",
+            projectId: "planner-adm",
+            storageBucket: "planner-adm.appspot.com",
+            messagingSenderId: "SUBSTITUA_PELO_SENDER_ID",
+            appId: "SUBSTITUA_PELO_APP_ID"
+        };
 
-        const DB_NAME = 'AdmStudyDB';
-        const STORE_NAME = 'subjects';
+        // Inicializar o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const storage = firebase.storage();
 
+        // Variáveis globais de controle
         let subjects = [];
         let activeSubjectId = null;
 
-        // Verify if IndexedDB is available
-        function isIndexedDBSupported() {
-            try {
-                return 'indexedDB' in window && window.indexedDB !== null;
-            } catch (e) {
-                return false;
-            }
-        }
+        // --- 2. OPERAÇÕES DE BANCO DE DADOS (FIREBASE REALTIME DATABASE) ---
 
-        <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
-
-<script>
-    // 1. Configuração do teu Firebase (Substitui com os teus dados reais!)
-    const firebaseConfig = {
-        apiKey: "A_TUA_API_KEY",
-        authDomain: "O_TEU_AUTH_DOMAIN",
-        projectId: "O_TEU_PROJECT_ID",
-        storageBucket: "O_TEU_STORAGE_BUCKET",
-        messagingSenderId: "O_TEU_SENDER_ID",
-        appId: "O_TEU_APP_ID"
-    };
-
-    // 2. Inicializar o Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const storage = firebase.storage();
-
-    // A partir daqui manténs as tuas variáveis globais
-    let subjects = [];
-    let activeSubjectId = null;
-    
-    // ... restante código ...// --- DATABASE OPERATIONS ---
-        function openDB() {
-            return new Promise((resolve, reject) => {
-                try {
-                    if (!isIndexedDBSupported()) {
-                        reject(new Error("IndexedDB não suportado"));
-                        return;
-                    }
-                    const request = indexedDB.open(DB_NAME, 2);
-                    
-                    request.onupgradeneeded = (e) => {
-                        const db = e.target.result;
-                        if (!db.objectStoreNames.contains(STORE_NAME)) {
-                            db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-                        }
-                    };
-                    
-                    request.onsuccess = (e) => resolve(e.target.result);
-                    request.onerror = (e) => reject(e.target.error);
-                } catch (err) {
-                    reject(err);
-                }
-            });
-        }
-
+        // Carregar matérias do Realtime Database
         async function loadSubjectsFromDB() {
-            if (useLocalStorage) {
-                try {
-                    const stored = localStorage.getItem(STORE_NAME);
-                    return stored ? JSON.parse(stored) : [];
-                } catch (e) {
-                    console.error("Erro no localStorage:", e);
-                    return [];
-                }
-            }
-
             try {
-                const db = await openDB();
-                return new Promise((resolve, reject) => {
-                    const transaction = db.transaction(STORE_NAME, 'readonly');
-                    const store = transaction.objectStore(STORE_NAME);
-                    const request = store.getAll();
-                    
-                    request.onsuccess = () => resolve(request.result || []);
-                    request.onerror = () => reject(request.error);
-                });
+                const snapshot = await db.ref('subjects').once('value');
+                const data = snapshot.val();
+                if (!data) return [];
+                // Converte o objeto { id1: subject1, id2: subject2 } em array
+                return Object.keys(data).map(key => ({ id: key, ...data[key] }));
             } catch (error) {
-                console.warn("IndexedDB indisponível/bloqueado. Ativando localStorage...", error);
-                useLocalStorage = true;
-                return loadSubjectsFromDB(); // Retry using localStorage
+                console.error("Erro ao ler do Firebase:", error);
+                showToast("Erro ao sincronizar com a nuvem. ❌");
+                return [];
             }
         }
 
+        // Salvar/Atualizar matéria no Realtime Database
         async function saveSubjectToDB(subject) {
-            // Safety checks to prevent code breaks on older sessions
-            if (!subject.tasks) subject.tasks = [];
-            if (!subject.pdfs) subject.pdfs = [];
-
-            if (useLocalStorage) {
-                try {
-                    const index = subjects.findIndex(s => s.id === subject.id);
-                    if (index !== -1) {
-                        subjects[index] = subject;
-                    } else {
-                        subjects.push(subject);
-                    }
-                    localStorage.setItem(STORE_NAME, JSON.stringify(subjects));
-                } catch (e) {
-                    console.error("Erro localStorage:", e);
-                }
-                return;
-            }
-
             try {
-                const db = await openDB();
-                return new Promise((resolve, reject) => {
-                    const transaction = db.transaction(STORE_NAME, 'readwrite');
-                    const store = transaction.objectStore(STORE_NAME);
-                    const request = store.put(subject);
-                    
-                    request.onsuccess = () => resolve();
-                    request.onerror = () => reject(request.error);
-                });
+                await db.ref('subjects/' + subject.id).set(subject);
             } catch (error) {
-                console.error("Erro IndexedDB. Salvando via localStorage...", error);
-                useLocalStorage = true;
-                await saveSubjectToDB(subject);
+                console.error("Erro ao salvar no Firebase:", error);
+                showToast("Erro ao guardar dados. ❌");
             }
         }
 
+        // Deletar matéria do Realtime Database
         async function deleteSubjectFromDB(id) {
-            if (useLocalStorage) {
-                try {
-                    subjects = subjects.filter(s => s.id !== id);
-                    localStorage.setItem(STORE_NAME, JSON.stringify(subjects));
-                } catch (e) {
-                    console.error("Erro de deleção localStorage:", e);
-                }
-                return;
-            }
-
             try {
-                const db = await openDB();
-                return new Promise((resolve, reject) => {
-                    const transaction = db.transaction(STORE_NAME, 'readwrite');
-                    const store = transaction.objectStore(STORE_NAME);
-                    const request = store.delete(id);
-                    
-                    request.onsuccess = () => resolve();
-                    request.onerror = () => reject(request.error);
-                });
+                await db.ref('subjects/' + id).remove();
             } catch (error) {
-                console.error("Erro ao deletar do banco de dados:", error);
+                console.error("Erro ao deletar do Firebase:", error);
+                showToast("Erro ao eliminar dados. ❌");
             }
         }
 
         // --- SYSTEM EVENTS & LOGIC ---
         document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                subjects = await loadSubjectsFromDB();
-                renderSubjectsList();
+            subjects = await loadSubjectsFromDB();
+            renderSubjectsList();
 
-                // Dom elements
-                const btnAddSubject = document.getElementById('btn-add-subject');
-                const subjectInput = document.getElementById('subject-input');
-                const btnSaveNotes = document.getElementById('btn-save-notes');
-                const btnAddTask = document.getElementById('btn-add-task');
-                const taskInput = document.getElementById('task-input');
-                const pdfInput = document.getElementById('pdf-input');
+            // Dom elements
+            const btnAddSubject = document.getElementById('btn-add-subject');
+            const subjectInput = document.getElementById('subject-input');
+            const btnSaveNotes = document.getElementById('btn-save-notes');
+            const btnAddTask = document.getElementById('btn-add-task');
+            const taskInput = document.getElementById('task-input');
+            const pdfInput = document.getElementById('pdf-input');
 
-                // Event Listeners with safety checks
-                if (btnAddSubject) btnAddSubject.addEventListener('click', addSubject);
-                if (subjectInput) {
-                    subjectInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addSubject(); });
-                }
-                if (btnSaveNotes) btnSaveNotes.addEventListener('click', saveNotes);
-                if (btnAddTask) btnAddTask.addEventListener('click', addTask);
-                if (taskInput) {
-                    taskInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTask(); });
-                }
-                if (pdfInput) pdfInput.addEventListener('change', uploadPDF);
-            } catch (err) {
-                console.error("Erro na inicialização:", err);
-            }
+            // Event Listeners
+            btnAddSubject.addEventListener('click', addSubject);
+            subjectInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addSubject(); });
+            btnSaveNotes.addEventListener('click', saveNotes);
+            btnAddTask.addEventListener('click', addTask);
+            taskInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTask(); });
+            pdfInput.addEventListener('change', uploadPDF);
         });
 
         // Toast System
         function showToast(message) {
             const toast = document.getElementById('toast');
-            if (!toast) return;
             toast.textContent = message;
             toast.classList.add('show');
             setTimeout(() => {
@@ -890,8 +786,6 @@
         // Add Subject
         async function addSubject() {
             const subjectInput = document.getElementById('subject-input');
-            if (!subjectInput) return;
-            
             const name = subjectInput.value.trim();
             if (!name) return;
 
@@ -903,9 +797,7 @@
                 pdfs: []
             };
 
-            if (useLocalStorage) {
-                subjects.push(newSubject);
-            }
+            subjects.push(newSubject);
             await saveSubjectToDB(newSubject);
             subjectInput.value = '';
             
@@ -916,12 +808,23 @@
 
         // Delete Subject
         async function deleteSubject(e, id) {
-            e.stopPropagation(); 
+            e.stopPropagation(); // Evitar escolher a matéria ao apagar
             if (!confirm('Deseja mesmo remover essa disciplina de estudos? Todas as anotações, tarefas e PDFs serão perdidos para sempre.')) return;
 
-            if (useLocalStorage) {
-                subjects = subjects.filter(s => s.id !== id);
+            // Se a matéria tiver PDFs, apaga-os também do Storage para libertar espaço
+            const subject = subjects.find(s => s.id === id);
+            if (subject && subject.pdfs) {
+                for (const pdf of subject.pdfs) {
+                    try {
+                        const fileRef = storage.refFromURL(pdf.url);
+                        await fileRef.delete();
+                    } catch (err) {
+                        console.warn("Não foi possível apagar o PDF físico do Firebase Storage:", err);
+                    }
+                }
             }
+
+            subjects = subjects.filter(s => s.id !== id);
             await deleteSubjectFromDB(id);
 
             if (activeSubjectId === id) {
@@ -937,10 +840,9 @@
         // Render Sidebar
         function renderSubjectsList() {
             const container = document.getElementById('subjects-container');
-            if (!container) return;
             container.innerHTML = '';
 
-            if (!subjects || subjects.length === 0) {
+            if (subjects.length === 0) {
                 container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 20px 0;">Nenhuma matéria adicionada ainda.</div>';
                 return;
             }
@@ -950,13 +852,14 @@
                 item.className = `subject-item ${subject.id === activeSubjectId ? 'active' : ''}`;
                 item.onclick = () => selectSubject(subject.id);
 
-                const tasks = subject.tasks || [];
-                const pdfs = subject.pdfs || [];
-
-                // Calculating progress safely
-                const totalTasks = tasks.length;
-                const completedTasks = tasks.filter(t => t.completed).length;
-                const filesCount = pdfs.length;
+                // Calcular progresso com segurança caso a propriedade não exista
+                const totalTasks = subject.tasks ? Object.keys(subject.tasks).length : 0;
+                
+                // Converter as tarefas num array para filtrar
+                const tasksArray = subject.tasks ? (Array.isArray(subject.tasks) ? subject.tasks : Object.values(subject.tasks)) : [];
+                const completedTasks = tasksArray.filter(t => t.completed).length;
+                
+                const filesCount = subject.pdfs ? Object.keys(subject.pdfs).length : 0;
 
                 item.innerHTML = `
                     <div class="subject-item-name">${escapeHTML(subject.name)}</div>
@@ -980,10 +883,8 @@
             const welcomeScreen = document.getElementById('welcome-screen');
             const subjectDashboard = document.getElementById('subject-dashboard');
 
-            if (welcomeScreen && subjectDashboard) {
-                welcomeScreen.classList.add('hidden');
-                subjectDashboard.classList.remove('hidden');
-            }
+            welcomeScreen.classList.add('hidden');
+            subjectDashboard.classList.remove('hidden');
 
             renderActiveSubject();
         }
@@ -993,71 +894,65 @@
             const subject = subjects.find(s => s.id === activeSubjectId);
             if (!subject) return;
 
-            const activeTitle = document.getElementById('active-subject-title');
-            const notesArea = document.getElementById('notes-area');
-            if (activeTitle) activeTitle.textContent = subject.name;
-            if (notesArea) notesArea.value = subject.notes || '';
-
-            const tasks = subject.tasks || [];
-            const pdfs = subject.pdfs || [];
+            document.getElementById('active-subject-title').textContent = subject.name;
+            document.getElementById('notes-area').value = subject.notes || '';
 
             // Render tasks
             const tasksContainer = document.getElementById('tasks-container');
-            if (tasksContainer) {
-                tasksContainer.innerHTML = '';
-                
-                let completedTasksCount = 0;
-                if (tasks.length > 0) {
-                    tasks.forEach((task, index) => {
-                        if (task.completed) completedTasksCount++;
-                        
-                        const item = document.createElement('li');
-                        item.className = 'checklist-item';
-                        item.innerHTML = `
-                            <div class="checklist-left">
-                                <input type="checkbox" class="checklist-checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${index}')">
-                                <span class="checklist-text">${escapeHTML(task.text)}</span>
-                            </div>
-                            <button class="btn-delete-task" onclick="deleteTask('${index}')" title="Excluir Tarefa">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
-                        `;
-                        tasksContainer.appendChild(item);
-                    });
-                } else {
-                    tasksContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">Nenhuma tarefa de estudo adicionada.</div>';
-                }
+            tasksContainer.innerHTML = '';
+            
+            let completedTasksCount = 0;
+            const tasksArray = subject.tasks ? (Array.isArray(subject.tasks) ? subject.tasks : Object.values(subject.tasks)) : [];
 
-                // Update Progress Percentage
-                const totalTasks = tasks.length;
-                const progressPercentage = totalTasks > 0 ? Math.round((completedTasksCount / totalTasks) * 100) : 0;
-                const progressElement = document.getElementById('active-subject-progress');
-                if (progressElement) progressElement.textContent = `${progressPercentage}% Concluído`;
+            if (tasksArray.length > 0) {
+                tasksArray.forEach((task, index) => {
+                    if (task.completed) completedTasksCount++;
+                    
+                    const item = document.createElement('li');
+                    item.className = 'checklist-item';
+                    item.innerHTML = `
+                        <div class="checklist-left">
+                            <input type="checkbox" class="checklist-checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${index}')">
+                            <span class="checklist-text">${escapeHTML(task.text)}</span>
+                        </div>
+                        <button class="btn-delete-task" onclick="deleteTask('${index}')" title="Excluir Tarefa">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                    `;
+                    tasksContainer.appendChild(item);
+                });
+            } else {
+                tasksContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">Nenhuma tarefa de estudo adicionada.</div>';
             }
+
+            // Update Progress Percentage
+            const totalTasks = tasksArray.length;
+            const progressPercentage = totalTasks > 0 ? Math.round((completedTasksCount / totalTasks) * 100) : 0;
+            document.getElementById('active-subject-progress').textContent = `${progressPercentage}% Concluído`;
 
             // Render PDFs
             const pdfContainer = document.getElementById('pdf-container');
-            if (pdfContainer) {
-                pdfContainer.innerHTML = '';
+            pdfContainer.innerHTML = '';
 
-                if (pdfs.length > 0) {
-                    pdfs.forEach((pdf, index) => {
-                        const item = document.createElement('div');
-                        item.className = 'pdf-item';
-                        item.innerHTML = `
-                            <a class="pdf-link" onclick="openPDF('${index}')" title="Clique para abrir">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #d9534f; flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                                ${escapeHTML(pdf.name)}
-                            </a>
-                            <button class="btn-delete-pdf" onclick="deletePDF('${index}')" title="Remover PDF">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
-                        `;
-                        pdfContainer.appendChild(item);
-                    });
-                } else {
-                    pdfContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">Nenhum material de aula em PDF anexado ainda.</div>';
-                }
+            const pdfsArray = subject.pdfs ? (Array.isArray(subject.pdfs) ? subject.pdfs : Object.values(subject.pdfs)) : [];
+
+            if (pdfsArray.length > 0) {
+                pdfsArray.forEach((pdf, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'pdf-item';
+                    item.innerHTML = `
+                        <a class="pdf-link" onclick="openPDF('${index}')" title="Clique para abrir">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #d9534f; flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                            ${escapeHTML(pdf.name)}
+                        </a>
+                        <button class="btn-delete-pdf" onclick="deletePDF('${index}')" title="Remover PDF">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                    `;
+                    pdfContainer.appendChild(item);
+                });
+            } else {
+                pdfContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">Nenhum material de aula em PDF anexado ainda.</div>';
             }
         }
 
@@ -1066,19 +961,14 @@
             const subject = subjects.find(s => s.id === activeSubjectId);
             if (!subject) return;
 
-            const notesArea = document.getElementById('notes-area');
-            if (notesArea) {
-                subject.notes = notesArea.value;
-                await saveSubjectToDB(subject);
-                showToast('Suas anotações foram salvas! 📝🌸');
-            }
+            subject.notes = document.getElementById('notes-area').value;
+            await saveSubjectToDB(subject);
+            showToast('Suas anotações foram salvas! 📝🌸');
         }
 
         // Add Checklist Task
         async function addTask() {
             const taskInput = document.getElementById('task-input');
-            if (!taskInput) return;
-            
             const text = taskInput.value.trim();
             if (!text) return;
 
@@ -1086,6 +976,11 @@
             if (!subject) return;
 
             if (!subject.tasks) subject.tasks = [];
+            // Garantir que é tratado como Array
+            if (!Array.isArray(subject.tasks)) {
+                subject.tasks = Object.values(subject.tasks);
+            }
+
             subject.tasks.push({
                 text: text,
                 completed: false
@@ -1095,7 +990,7 @@
             taskInput.value = '';
             
             renderActiveSubject();
-            renderSubjectsList(); 
+            renderSubjectsList(); // Atualizar contagem lateral
             showToast('Nova tarefa adicionada! ✨');
         }
 
@@ -1104,11 +999,15 @@
             const subject = subjects.find(s => s.id === activeSubjectId);
             if (!subject) return;
 
+            if (!Array.isArray(subject.tasks)) {
+                subject.tasks = Object.values(subject.tasks);
+            }
+
             subject.tasks[index].completed = !subject.tasks[index].completed;
             await saveSubjectToDB(subject);
 
             renderActiveSubject();
-            renderSubjectsList(); 
+            renderSubjectsList();
         }
 
         // Delete Checklist Task
@@ -1116,14 +1015,18 @@
             const subject = subjects.find(s => s.id === activeSubjectId);
             if (!subject) return;
 
+            if (!Array.isArray(subject.tasks)) {
+                subject.tasks = Object.values(subject.tasks);
+            }
+
             subject.tasks.splice(index, 1);
             await saveSubjectToDB(subject);
 
             renderActiveSubject();
-            renderSubjectsList(); 
+            renderSubjectsList();
         }
 
-        // Upload and Store PDF
+        // Upload and Store PDF in Firebase Storage
         async function uploadPDF(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -1134,50 +1037,59 @@
             }
 
             if (file.size > 25 * 1024 * 1024) {
-                alert("O arquivo é muito grande! PDF com limite máximo de 25MB.");
+                alert("O arquivo é muito grande! PDFs com limite de 25MB para evitar alto consumo de dados de rede.");
                 return;
-            }
-
-            if (useLocalStorage) {
-                alert("Atenção: Estamos no Modo de Compatibilidade (localStorage) porque o teu navegador bloqueou o banco de dados principal. Neste modo, o upload de PDFs grandes pode falhar por falta de espaço. Se puderes, abre esta página fora do Modo Privado/Incógnito para usar o armazenamento completo!");
             }
 
             const subject = subjects.find(s => s.id === activeSubjectId);
             if (!subject) return;
 
-            const reader = new FileReader();
-            reader.onload = async function(event) {
-                const arrayBuffer = event.target.result;
+            try {
+                showToast('Fazendo upload do PDF para a nuvem... ☁️');
                 
+                // Cria referência única no Firebase Storage: subjects/ID_DA_MATERIA/timestamp_NOME.pdf
+                const fileRef = storage.ref().child(`subjects/${subject.id}/${Date.now()}_${file.name}`);
+                
+                // Upload direto
+                const uploadTask = await fileRef.put(file);
+                
+                // Obtém link de acesso
+                const downloadURL = await uploadTask.ref.getDownloadURL();
+
                 if (!subject.pdfs) subject.pdfs = [];
+                if (!Array.isArray(subject.pdfs)) {
+                    subject.pdfs = Object.values(subject.pdfs);
+                }
+
                 subject.pdfs.push({
                     name: file.name,
                     type: file.type,
-                    data: arrayBuffer 
+                    url: downloadURL // Link direto da nuvem
                 });
 
                 await saveSubjectToDB(subject);
-                e.target.value = ''; 
+                e.target.value = ''; // Reset do input
                 
                 renderActiveSubject();
                 renderSubjectsList();
                 showToast('Material PDF anexado com sucesso! 📎💖');
-            };
-
-            reader.readAsArrayBuffer(file);
+            } catch (error) {
+                console.error("Erro no upload do PDF:", error);
+                alert("Erro ao fazer upload do PDF. Verifique se as Regras de Segurança do Firebase Storage permitem gravações públicas em modo teste.");
+            }
         }
 
-        // View/Open PDF offline
+        // View/Open PDF
         window.openPDF = function(pdfIndex) {
             const subject = subjects.find(s => s.id === activeSubjectId);
             if (!subject) return;
 
-            const pdf = subject.pdfs[pdfIndex];
+            const pdfsArray = subject.pdfs ? (Array.isArray(subject.pdfs) ? subject.pdfs : Object.values(subject.pdfs)) : [];
+            const pdf = pdfsArray[pdfIndex];
             if (!pdf) return;
 
-            const blob = new Blob([pdf.data], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            window.open(url, '_blank');
+            // Abre o PDF guardado na nuvem diretamente noutra aba do navegador
+            window.open(pdf.url, '_blank');
         };
 
         // Delete PDF
@@ -1187,6 +1099,22 @@
             const subject = subjects.find(s => s.id === activeSubjectId);
             if (!subject) return;
 
+            if (!Array.isArray(subject.pdfs)) {
+                subject.pdfs = Object.values(subject.pdfs);
+            }
+
+            const pdf = subject.pdfs[pdfIndex];
+            
+            // Eliminar ficheiro do Firebase Storage para não gastar armazenamento à toa
+            if (pdf && pdf.url) {
+                try {
+                    const fileRef = storage.refFromURL(pdf.url);
+                    await fileRef.delete();
+                } catch (error) {
+                    console.warn("Erro ao eliminar o ficheiro físico do Firebase Storage:", error);
+                }
+            }
+
             subject.pdfs.splice(pdfIndex, 1);
             await saveSubjectToDB(subject);
 
@@ -1195,9 +1123,9 @@
             showToast('PDF removido.');
         }
 
-        // Prevent HTML injection helper
+        // Evitar injeção Helper
         function escapeHTML(str) {
-            return str.replace(/[&<>'\"]/g, 
+            return str.replace(/[&<>'"]/g, 
                 tag => ({
                     '&': '&amp;',
                     '<': '&lt;',
